@@ -7,6 +7,7 @@ import {
  StyleSheet,
  Dimensions
 } from 'react-native';
+import { allTeams } from '../data/teamsData'; // Import the shared data
 
 
 // Minimal UI Components
@@ -86,18 +87,8 @@ const Alert = ({ children, variant = 'default', style, ...props }) => {
 
 
 const AllianceSelection = () => {
- const generateRandomTeams = () => {
-   return Array.from({ length: 34 }, (_, i) => ({
-     id: i + 1,
-     name: `Team ${i + 1}`,
-     rankingPoints: Math.floor(Math.random() * 100),
-     coopertition: Math.random(),
-   }));
- };
-
-
  const [teams] = useState(
-   generateRandomTeams().sort((a, b) =>
+   allTeams.sort((a, b) =>
      b.rankingPoints === a.rankingPoints
        ? b.coopertition - a.coopertition
        : b.rankingPoints - a.rankingPoints
