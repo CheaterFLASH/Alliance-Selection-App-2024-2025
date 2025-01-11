@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
  View,
  Text,
@@ -8,6 +8,8 @@ import {
  Dimensions
 } from 'react-native';
 import { allTeams } from '../data/teamsData'; // Import the shared data
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
 
 // Minimal UI Components
@@ -113,6 +115,38 @@ const AllianceSelection = () => {
  const [currentAllianceIndex, setCurrentAllianceIndex] = useState(0);
  const [isReverse, setIsReverse] = useState(false);
  const [error, setError] = useState('');
+ const [pickListTeams, setPickListTeams] = useState([]);
+
+
+ useEffect(() => {
+   const loadPickListTeams = async () => {
+     try {
+       // Get teams from local storage
+       const savedTeams = Platform.OS === 'web'
+         ? JSON.parse(localStorage.getItem('teams')) || []
+         : JSON.parse(await AsyncStorage.getItem('teams')) || [];
+       
+       // Map saved teams to full team data from allTeams
+       const pickListWithFullData = savedTeams.map(pickTeam => {
+         const fullTeamData = teams.find(team => 
+           team.name === `Team ${pickTeam.number}`
+         );
+         return fullTeamData; // Use only the data from teams (which includes correct rank)
+       }).filter(Boolean); // Remove any undefined entries
+       
+       // Filter out teams that have already been selected
+       const availablePickListTeams = pickListWithFullData.filter(pickTeam => 
+         remainingTeams.some(team => team.id === pickTeam.id)
+       );
+       
+       setPickListTeams(availablePickListTeams.slice(0, 2)); // Show only top 2 teams
+     } catch (error) {
+       console.error('Failed to load pick list teams', error);
+     }
+   };
+
+   loadPickListTeams();
+ }, [remainingTeams, teams]); // Include teams in dependencies
 
 
  const handleSelection = (teamId) => {
@@ -304,7 +338,27 @@ const AllianceSelection = () => {
 
 
            <View style={styles.halfWidth}>
-             <Text style={styles.sectionTitle}>Available Teams</Text>
+             <Card style={styles.pickListBox}>
+               <Text style={styles.pickListTitle}>Pick List</Text>
+               {pickListTeams.length > 0 ? (
+                 pickListTeams.map(team => (
+                   <TouchableOpacity
+                     key={team.id}
+                     style={styles.pickListItem}
+                     onPress={() => handleSelection(team.id)}
+                   >
+                     <Text style={styles.pickListTeamText}>
+                       {team.name}
+                       <Text style={styles.rankText}> (Rank {team.rank})</Text>
+                     </Text>
+                   </TouchableOpacity>
+                 ))
+               ) : (
+                 <Text style={styles.noTeamsText}>No teams in pick list</Text>
+               )}
+             </Card>
+
+             <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Available Teams</Text>
              <ScrollView>
                {remainingTeams.map(team => {
                  const isCaptain = alliances.some(alliance =>
@@ -462,6 +516,36 @@ const styles = StyleSheet.create({
  finalizedRankText: {
    fontSize: 14,
    color: '#666',
+ },
+ pickListBox: {
+   padding: 12,
+   marginBottom: 16,
+   backgroundColor: '#f8f9fa',
+   borderWidth: 1,
+   borderColor: '#dee2e6',
+ },
+ pickListTitle: {
+   fontSize: 16,
+   fontWeight: 'bold',
+   marginBottom: 8,
+ },
+ pickListItem: {
+   padding: 8,
+   borderRadius: 4,
+   marginBottom: 4,
+   backgroundColor: '#fff',
+   borderWidth: 1,
+   borderColor: '#e0e0e0',
+ },
+ pickListTeamText: {
+   fontSize: 14,
+   fontWeight: '500',
+ },
+ noTeamsText: {
+   textAlign: 'center',
+   color: '#666',
+   fontStyle: 'italic',
+   padding: 8,
  },
 });
 
