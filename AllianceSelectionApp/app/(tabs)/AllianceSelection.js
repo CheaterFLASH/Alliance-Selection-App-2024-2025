@@ -90,16 +90,7 @@ const Alert = ({ children, variant = 'default', style, ...props }) => {
 
 
 const AllianceSelection = () => {
- const [teams] = useState(
-   allTeams.sort((a, b) =>
-     b.rankingPoints === a.rankingPoints
-       ? b.coopertition - a.coopertition
-       : b.rankingPoints - a.rankingPoints
-   ).map((team, index) => ({
-     ...team,
-     rank: index + 1,
-   }))
- );
+ const [teams] = useState(allTeams);
 
 
  const [alliances, setAlliances] = useState(
@@ -434,7 +425,7 @@ const AllianceSelection = () => {
                      variant={isCaptain ? "secondary" : "outline"}
                    >
                      <View style={styles.buttonContent}>
-                       <Text>{team.name}</Text>
+                       <Text>Team {team.id}</Text>
                        <Text style={styles.rankText}>
                          Rank {team.rank}
                          {isCaptain && " (Captain)"}
