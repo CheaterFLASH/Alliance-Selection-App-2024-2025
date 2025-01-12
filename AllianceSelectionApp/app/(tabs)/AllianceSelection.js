@@ -10,6 +10,7 @@ import {
 import { allTeams } from '../data/teamsData'; // Import the shared data
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 
 
 // Minimal UI Components
@@ -118,35 +119,37 @@ const AllianceSelection = () => {
  const [pickListTeams, setPickListTeams] = useState([]);
 
 
- useEffect(() => {
-   const loadPickListTeams = async () => {
-     try {
-       // Get teams from local storage
-       const savedTeams = Platform.OS === 'web'
-         ? JSON.parse(localStorage.getItem('teams')) || []
-         : JSON.parse(await AsyncStorage.getItem('teams')) || [];
-       
-       // Map saved teams to full team data from allTeams
-       const pickListWithFullData = savedTeams.map(pickTeam => {
-         const fullTeamData = teams.find(team => 
-           team.name === `Team ${pickTeam.number}`
+ useFocusEffect(
+   React.useCallback(() => {
+     const loadPickListTeams = async () => {
+       try {
+         // Get teams from local storage
+         const savedTeams = Platform.OS === 'web'
+           ? JSON.parse(localStorage.getItem('teams')) || []
+           : JSON.parse(await AsyncStorage.getItem('teams')) || [];
+         
+         // Map saved teams to full team data from allTeams
+         const pickListWithFullData = savedTeams.map(pickTeam => {
+           const fullTeamData = teams.find(team => 
+             team.name === `Team ${pickTeam.number}`
+           );
+           return fullTeamData; // Use only the data from teams (which includes correct rank)
+         }).filter(Boolean); // Remove any undefined entries
+         
+         // Filter out teams that have already been selected
+         const availablePickListTeams = pickListWithFullData.filter(pickTeam => 
+           remainingTeams.some(team => team.id === pickTeam.id)
          );
-         return fullTeamData; // Use only the data from teams (which includes correct rank)
-       }).filter(Boolean); // Remove any undefined entries
-       
-       // Filter out teams that have already been selected
-       const availablePickListTeams = pickListWithFullData.filter(pickTeam => 
-         remainingTeams.some(team => team.id === pickTeam.id)
-       );
-       
-       setPickListTeams(availablePickListTeams.slice(0, 2)); // Show only top 2 teams
-     } catch (error) {
-       console.error('Failed to load pick list teams', error);
-     }
-   };
+         
+         setPickListTeams(availablePickListTeams.slice(0, 2)); // Show only top 2 teams
+       } catch (error) {
+         console.error('Failed to load pick list teams', error);
+       }
+     };
 
-   loadPickListTeams();
- }, [remainingTeams, teams]); // Include teams in dependencies
+     loadPickListTeams();
+   }, [remainingTeams, teams])
+ );
 
 
  const handleSelection = (teamId) => {
