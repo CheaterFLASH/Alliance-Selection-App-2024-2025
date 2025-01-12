@@ -63,6 +63,14 @@ const PickList = () => {
       return;
     }
 
+    // Check if team is already in the pick list
+    const isDuplicate = teams.some(team => team.number === teamInput.trim());
+    if (isDuplicate) {
+      alert('This team is already in your pick list');
+      setTeamInput('');
+      return;
+    }
+
     const newTeam = {
       id: existingTeam.id,
       number: teamInput.trim(),
