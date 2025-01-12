@@ -7,7 +7,7 @@ import {
  StyleSheet,
  Dimensions
 } from 'react-native';
-import { allTeams } from '../data/teamsData'; // Import the shared data
+import allTeams from '../data/teamsData'; // Update this line
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';

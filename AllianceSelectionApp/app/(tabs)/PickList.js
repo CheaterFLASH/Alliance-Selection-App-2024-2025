@@ -10,8 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { motion } from 'framer-motion';
-import { allTeams } from '../data/teamsData'; // Import the shared data
+import allTeams from '../data/teamsData'; // Update this line
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -108,11 +107,7 @@ const PickList = () => {
 
   const renderItem = ({ item, index }) => {
     return (
-      <motion.div
-        layout
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        style={styles.teamItem}
-      >
+      <View style={styles.teamItem}>
         <Text style={styles.rankNumber}>{item.rank}</Text>
         <Text style={styles.teamNumber}>Team {item.number}</Text>
         <View style={styles.arrowContainer}>
@@ -123,7 +118,7 @@ const PickList = () => {
             <Text style={styles.arrow}>↓</Text>
           </TouchableOpacity>
         </View>
-      </motion.div>
+      </View>
     );
   };
 
@@ -153,7 +148,11 @@ const PickList = () => {
         </TouchableOpacity>
       </View>
 
-      {teams.map((item, index) => renderItem({ item, index }))}
+      {teams.map((item, index) => (
+        <View key={item.id || index}>
+          {renderItem({ item, index })}
+        </View>
+      ))}
     </View>
   );
 };
