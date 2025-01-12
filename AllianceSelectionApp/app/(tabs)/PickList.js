@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,8 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 const PickList = () => {
   const [teams, setTeams] = useState([]);
   const [teamInput, setTeamInput] = useState('');
+  const [history, setHistory] = useState([]); // Add state for undo history
+  const inputRef = useRef();
 
   useEffect(() => {
     const loadTeams = async () => {
@@ -53,6 +55,18 @@ const PickList = () => {
     saveTeams();
   }, [teams]);
 
+  const saveToHistory = (currentTeams) => {
+    setHistory(prev => [...prev, [...currentTeams]]);
+  };
+
+  const handleUndo = () => {
+    if (history.length === 0) return;
+    
+    const previousTeams = history[history.length - 1];
+    setTeams(previousTeams);
+    setHistory(prev => prev.slice(0, -1));
+  };
+
   const handleAddTeam = () => {
     if (!teamInput.trim()) return;
 
@@ -62,13 +76,16 @@ const PickList = () => {
       return;
     }
 
-    // Check if team is already in the pick list
     const isDuplicate = teams.some(team => team.number === teamInput.trim());
     if (isDuplicate) {
       alert('This team is already in your pick list');
       setTeamInput('');
+      inputRef.current?.focus();
       return;
     }
+
+    // Save current state before making changes
+    saveToHistory(teams);
 
     const newTeam = {
       id: existingTeam.id,
@@ -78,6 +95,7 @@ const PickList = () => {
 
     setTeams([...teams, newTeam]);
     setTeamInput('');
+    inputRef.current?.focus();
   };
 
   const handleResetTeams = () => {
@@ -124,6 +142,19 @@ const PickList = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.title}>Pick List</Text>
+        <TouchableOpacity 
+          style={styles.undoButton}
+          onPress={handleUndo}
+          disabled={history.length === 0}
+        >
+          <Text style={[
+            styles.undoButtonText,
+            history.length === 0 && styles.undoButtonDisabled
+          ]}>Undo</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -133,6 +164,7 @@ const PickList = () => {
           keyboardType="numeric"
           returnKeyType="done"
           onSubmitEditing={handleAddTeam}
+          ref={inputRef}
         />
         <TouchableOpacity 
           style={styles.addButton}
@@ -227,6 +259,28 @@ const styles = StyleSheet.create({
   arrow: {
     fontSize: 18,
     marginHorizontal: 8,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  undoButton: {
+    padding: 8,
+    borderRadius: 4,
+    backgroundColor: '#f0f0f0',
+  },
+  undoButtonText: {
+    color: '#2196f3',
+    fontWeight: 'bold',
+  },
+  undoButtonDisabled: {
+    color: '#999',
   },
 });
 

@@ -117,6 +117,7 @@ const AllianceSelection = () => {
  const [isReverse, setIsReverse] = useState(false);
  const [error, setError] = useState('');
  const [pickListTeams, setPickListTeams] = useState([]);
+ const [history, setHistory] = useState([]);
 
 
  useFocusEffect(
@@ -152,7 +153,53 @@ const AllianceSelection = () => {
  );
 
 
+ const saveToHistory = (currentState) => {
+   // Create a deep copy of the current state before saving
+   const stateCopy = {
+     alliances: currentState.alliances.map(alliance => ({
+       ...alliance,
+       captain: { ...alliance.captain },
+       members: [...alliance.members],
+       hasPicked: alliance.hasPicked
+     })),
+     remainingTeams: [...currentState.remainingTeams],
+     currentAllianceIndex: currentState.currentAllianceIndex,
+     isReverse: currentState.isReverse
+   };
+   
+   setHistory(prev => [...prev, stateCopy]);
+ };
+
+
+ const handleUndo = () => {
+   if (history.length === 0) return;
+   
+   const previousState = history[history.length - 1];
+   
+   // Create a deep copy of the previous alliances state to ensure all properties are properly restored
+   const restoredAlliances = previousState.alliances.map(alliance => ({
+     ...alliance,
+     captain: { ...alliance.captain },
+     members: [...alliance.members],
+     hasPicked: alliance.hasPicked // This will restore the correct hasPicked state
+   }));
+
+   setAlliances(restoredAlliances);
+   setRemainingTeams(previousState.remainingTeams);
+   setCurrentAllianceIndex(previousState.currentAllianceIndex);
+   setIsReverse(previousState.isReverse);
+   setHistory(prev => prev.slice(0, -1));
+ };
+
+
  const handleSelection = (teamId) => {
+   saveToHistory({
+     alliances,
+     remainingTeams,
+     currentAllianceIndex,
+     isReverse
+   });
+
    setError('');
    const selectedTeam = remainingTeams.find(team => team.id === teamId);
    if (!selectedTeam) return;
@@ -297,7 +344,19 @@ const AllianceSelection = () => {
    >
      <Card style={styles.container}>
        <Card.Header>
-         <Card.Title>Alliance Selection</Card.Title>
+         <View style={styles.headerContainer}>
+           <Card.Title>Alliance Selection</Card.Title>
+           <TouchableOpacity 
+             style={styles.undoButton}
+             onPress={handleUndo}
+             disabled={history.length === 0}
+           >
+             <Text style={[
+               styles.undoButtonText,
+               history.length === 0 && styles.undoButtonDisabled
+             ]}>Undo</Text>
+           </TouchableOpacity>
+         </View>
        </Card.Header>
        <Card.Content>
          {error ? (
@@ -549,6 +608,23 @@ const styles = StyleSheet.create({
    color: '#666',
    fontStyle: 'italic',
    padding: 8,
+ },
+ headerContainer: {
+   flexDirection: 'row',
+   justifyContent: 'space-between',
+   alignItems: 'center',
+ },
+ undoButton: {
+   padding: 8,
+   borderRadius: 4,
+   backgroundColor: '#e0e0e0',
+ },
+ undoButtonText: {
+   fontSize: 14,
+   fontWeight: 'bold',
+ },
+ undoButtonDisabled: {
+   opacity: 0.5,
  },
 });
 
