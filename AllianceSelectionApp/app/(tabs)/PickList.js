@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,10 @@ import {
   LayoutAnimation,
   UIManager,
   Platform,
+  ScrollView,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import allTeams from '../data/teamsData'; // Update this line
+import { allTeams } from '../data/teamsData';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -20,8 +21,6 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 const PickList = () => {
   const [teams, setTeams] = useState([]);
   const [teamInput, setTeamInput] = useState('');
-  const [history, setHistory] = useState([]); // Add state for undo history
-  const inputRef = useRef();
 
   useEffect(() => {
     const loadTeams = async () => {
@@ -55,47 +54,35 @@ const PickList = () => {
     saveTeams();
   }, [teams]);
 
-  const saveToHistory = (currentTeams) => {
-    setHistory(prev => [...prev, [...currentTeams]]);
-  };
-
-  const handleUndo = () => {
-    if (history.length === 0) return;
-    
-    const previousTeams = history[history.length - 1];
-    setTeams(previousTeams);
-    setHistory(prev => prev.slice(0, -1));
-  };
-
   const handleAddTeam = () => {
     if (!teamInput.trim()) return;
 
-    const existingTeam = allTeams.find(team => team.name === `Team ${teamInput.trim()}`);
+    const teamNumber = parseInt(teamInput.trim());
+    const existingTeam = allTeams.find(team => team.number === teamNumber);
+    
     if (!existingTeam) {
       alert('Team not found in the total list');
       return;
     }
 
-    const isDuplicate = teams.some(team => team.number === teamInput.trim());
-    if (isDuplicate) {
-      alert('This team is already in your pick list');
-      setTeamInput('');
-      inputRef.current?.focus();
+    // Check if team is already in the list
+    if (teams.some(team => team.number === teamNumber)) {
+      alert('Team already in pick list');
       return;
     }
 
-    // Save current state before making changes
-    saveToHistory(teams);
-
     const newTeam = {
       id: existingTeam.id,
-      number: teamInput.trim(),
+      number: teamNumber,
       rank: teams.length + 1
     };
 
+    if (Platform.OS !== 'web') {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    }
+
     setTeams([...teams, newTeam]);
     setTeamInput('');
-    inputRef.current?.focus();
   };
 
   const handleResetTeams = () => {
@@ -123,9 +110,9 @@ const PickList = () => {
     setTeams(newTeams.map((team, idx) => ({ ...team, rank: idx + 1 })));
   };
 
-  const renderItem = ({ item, index }) => {
+  const renderTeamItem = (item, index) => {
     return (
-      <View style={styles.teamItem}>
+      <View key={item.number} style={styles.teamItem}>
         <Text style={styles.rankNumber}>{item.rank}</Text>
         <Text style={styles.teamNumber}>Team {item.number}</Text>
         <View style={styles.arrowContainer}>
@@ -142,29 +129,16 @@ const PickList = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.title}>Pick List</Text>
-        <TouchableOpacity 
-          style={styles.undoButton}
-          onPress={handleUndo}
-          disabled={history.length === 0}
-        >
-          <Text style={[
-            styles.undoButtonText,
-            history.length === 0 && styles.undoButtonDisabled
-          ]}>Undo</Text>
-        </TouchableOpacity>
-      </View>
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
           value={teamInput}
           onChangeText={setTeamInput}
           placeholder="Enter team number"
+          placeholderTextColor="#666666"
           keyboardType="numeric"
           returnKeyType="done"
           onSubmitEditing={handleAddTeam}
-          ref={inputRef}
         />
         <TouchableOpacity 
           style={styles.addButton}
@@ -180,11 +154,9 @@ const PickList = () => {
         </TouchableOpacity>
       </View>
 
-      {teams.map((item, index) => (
-        <View key={item.id || index}>
-          {renderItem({ item, index })}
-        </View>
-      ))}
+      <ScrollView>
+        {teams.map((item, index) => renderTeamItem(item, index))}
+      </ScrollView>
     </View>
   );
 };
@@ -193,7 +165,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#000000',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -201,55 +173,62 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#1a1a1a',
     padding: 12,
     borderRadius: 8,
     marginRight: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#ff3030',
+    color: '#ffffff',
   },
   addButton: {
-    backgroundColor: '#2196f3',
+    backgroundColor: '#ff3030',
     padding: 12,
     borderRadius: 8,
     justifyContent: 'center',
     marginRight: 8,
   },
   addButtonText: {
-    color: 'white',
+    color: '#ffffff',
     fontWeight: 'bold',
   },
   resetButton: {
-    backgroundColor: '#f44336',
+    backgroundColor: '#2d0808',
     padding: 12,
     borderRadius: 8,
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#ff3030',
   },
   resetButtonText: {
-    color: 'white',
+    color: '#ffffff',
     fontWeight: 'bold',
   },
   teamItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
+    backgroundColor: '#1a1a1a',
     padding: 16,
     marginBottom: 12,
     borderRadius: 8,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: '#ff3030',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
+    borderWidth: 1,
+    borderColor: '#ff3030',
   },
   rankNumber: {
     fontWeight: 'bold',
     marginRight: 16,
     width: 30,
+    color: '#ffffff',
   },
   teamNumber: {
     flex: 1,
     fontSize: 16,
+    color: '#ffffff',
   },
   arrowContainer: {
     flexDirection: 'row',
@@ -258,29 +237,8 @@ const styles = StyleSheet.create({
   },
   arrow: {
     fontSize: 18,
+    color: '#ff3030',
     marginHorizontal: 8,
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  undoButton: {
-    padding: 8,
-    borderRadius: 4,
-    backgroundColor: '#f0f0f0',
-  },
-  undoButtonText: {
-    color: '#2196f3',
-    fontWeight: 'bold',
-  },
-  undoButtonDisabled: {
-    color: '#999',
   },
 });
 

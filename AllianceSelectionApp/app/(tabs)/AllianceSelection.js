@@ -425,7 +425,7 @@ const AllianceSelection = () => {
                      variant={isCaptain ? "secondary" : "outline"}
                    >
                      <View style={styles.buttonContent}>
-                       <Text>Team {team.id}</Text>
+                       <Text style={styles.buttonText}>Team {team.id}</Text>
                        <Text style={styles.rankText}>
                          Rank {team.rank}
                          {isCaptain && " (Captain)"}
@@ -448,20 +448,23 @@ const styles = StyleSheet.create({
  scrollContainer: {
    flexGrow: 1,
    minHeight: Dimensions.get('window').height,
+   backgroundColor: '#000000',
  },
  container: {
    flex: 1,
    padding: 16,
-   backgroundColor: '#f5f5f5',
+   backgroundColor: '#000000',
  },
  card: {
-   backgroundColor: 'white',
+   backgroundColor: '#1a1a1a',
    borderRadius: 8,
-   shadowColor: '#000',
+   shadowColor: '#ff3030',
    shadowOffset: { width: 0, height: 2 },
-   shadowOpacity: 0.1,
+   shadowOpacity: 0.3,
    shadowRadius: 4,
    elevation: 3,
+   borderWidth: 1,
+   borderColor: '#ff3030',
  },
  cardHeader: {
    marginBottom: 16,
@@ -469,6 +472,7 @@ const styles = StyleSheet.create({
  cardTitle: {
    fontSize: 20,
    fontWeight: 'bold',
+   color: '#ffffff',
  },
  selectionContainer: {
    flexDirection: 'row',
@@ -481,34 +485,39 @@ const styles = StyleSheet.create({
    fontSize: 18,
    fontWeight: 'bold',
    marginBottom: 16,
+   color: '#ffffff',
  },
  allianceCard: {
    padding: 16,
    marginBottom: 12,
    borderWidth: 1,
-   borderColor: '#e0e0e0',
+   borderColor: '#ff3030',
+   backgroundColor: '#1a1a1a',
  },
  currentAlliance: {
-   borderColor: '#2196f3',
+   borderColor: '#ff3030',
    borderWidth: 2,
+   backgroundColor: '#2d0808',
  },
  allianceTitle: {
    fontSize: 16,
    fontWeight: 'bold',
    marginBottom: 8,
+   color: '#ffffff',
  },
  allianceDetails: {
    marginTop: 8,
  },
  captainText: {
    fontWeight: 'bold',
+   color: '#ffffff',
  },
  rankText: {
-   color: '#666',
+   color: '#ff3030',
    fontSize: 12,
  },
  pickedText: {
-   color: 'green',
+   color: '#66ff66',
  },
  button: {
    padding: 12,
@@ -520,10 +529,11 @@ const styles = StyleSheet.create({
  },
  buttonOutline: {
    borderWidth: 1,
-   borderColor: '#e0e0e0',
+   borderColor: '#ff3030',
+   backgroundColor: '#1a1a1a',
  },
  buttonSecondary: {
-   backgroundColor: '#e0e0e0',
+   backgroundColor: '#2d0808',
  },
  buttonDisabled: {
    opacity: 0.5,
@@ -532,6 +542,10 @@ const styles = StyleSheet.create({
    flexDirection: 'row',
    justifyContent: 'space-between',
    width: '100%',
+   color: '#ffffff',
+ },
+ buttonText: {
+   color: '#ffffff',
  },
  alert: {
    padding: 16,
@@ -550,53 +564,57 @@ const styles = StyleSheet.create({
    flexWrap: 'wrap',
    justifyContent: 'space-between',
  },
- // New styles for finalized screen
  finalizedAllianceTitle: {
    fontSize: 22,
    fontWeight: 'bold',
    marginBottom: 12,
    textAlign: 'center',
+   color: '#ffffff',
  },
  finalizedCaptainText: {
    fontSize: 18,
    fontWeight: 'bold',
    marginBottom: 8,
+   color: '#ffffff',
  },
  finalizedMemberText: {
    fontSize: 16,
    marginBottom: 4,
+   color: '#ffffff',
  },
  finalizedRankText: {
    fontSize: 14,
-   color: '#666',
+   color: '#ff3030',
  },
  pickListBox: {
    padding: 12,
    marginBottom: 16,
-   backgroundColor: '#f8f9fa',
+   backgroundColor: '#1a1a1a',
    borderWidth: 1,
-   borderColor: '#dee2e6',
+   borderColor: '#ff3030',
  },
  pickListTitle: {
    fontSize: 16,
    fontWeight: 'bold',
    marginBottom: 8,
+   color: '#ffffff',
  },
  pickListItem: {
    padding: 8,
    borderRadius: 4,
    marginBottom: 4,
-   backgroundColor: '#fff',
+   backgroundColor: '#2d0808',
    borderWidth: 1,
-   borderColor: '#e0e0e0',
+   borderColor: '#ff3030',
  },
  pickListTeamText: {
    fontSize: 14,
    fontWeight: '500',
+   color: '#ffffff',
  },
  noTeamsText: {
    textAlign: 'center',
-   color: '#666',
+   color: '#ff3030',
    fontStyle: 'italic',
    padding: 8,
  },
